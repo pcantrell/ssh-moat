@@ -1,0 +1,95 @@
+startup:
+    - ipfw -f flush
+
+    # Failsafe
+    
+    - ipfw add 65535 set 31 allow ip from any to any
+    - ipfw add 02041 allow tcp from 209.98.98.8 to any dst-port 22 in
+
+    # Standard rules
+
+    - ipfw add 02000 allow ip from any to any via lo*
+    - ipfw add 02010 deny ip from 127.0.0.0/8 to any in
+    - ipfw add 02020 deny ip from any to 127.0.0.0/8 in
+    - ipfw add 02030 deny ip from 224.0.0.0/3 to any in
+    - ipfw add 02040 deny tcp from any to 224.0.0.0/3 in
+    - ipfw add 02050 allow tcp from any to any out
+    - ipfw add 02060 allow tcp from any to any established
+    - ipfw add 02070 allow tcp from any to any dst-port 80 in
+    - ipfw add 12190 deny log tcp from any to any
+    - ipfw add 20310 allow udp from any to any dst-port 53 in
+    - ipfw add 20320 allow udp from any to any dst-port 68 in
+    - ipfw add 20321 allow udp from any 67 to me in
+    - ipfw add 20322 allow udp from any 5353 to me in
+    - ipfw add 20370 allow udp from any to any dst-port 5353 in
+    - ipfw add 22020 allow udp from any to any dst-port 123 in
+    - ipfw add 30510 allow udp from me to any out keep-state
+    - ipfw add 30520 allow udp from any to any in frag
+    - ipfw add 35000 deny udp from any to any in
+    
+    # Disabled standard rules
+
+    - ipfw set disable 10
+    - ipfw set disable 20
+    - ipfw add 06000 set 10 allow tcp from any to any dst-port 3283 in
+    - ipfw add 06000 set 10 allow tcp from any to any dst-port 5900 in
+    - ipfw add 06000 set 10 allow tcp from any to any dst-port 3283 in
+    - ipfw add 06000 set 10 allow tcp from any to any dst-port 5900 in
+    - ipfw add 20340 set 20 allow udp from any to any dst-port 137 in
+    - ipfw add 20350 set 20 allow udp from any to any dst-port 427 in
+    - ipfw add 22000 set 10 allow udp from any to any dst-port 3283 in
+    - ipfw add 22010 set 10 allow udp from any to any dst-port 5900 in
+
+    # Monitoring
+
+    - ipfw add 22030 allow udp from 216.243.185.67 to any dst-port 161 in
+    - ipfw add 22030 allow udp from 216.243.185.67 to any dst-port 161 in
+
+    # Pipes
+
+    - ipfw pipe 1 config bw 3000Kbit/s queue 200Kbytes
+    - ipfw pipe 2 config bw 64Kbit/s queue 12Kbytes
+    - ipfw pipe 3 config bw 8Kbit/s queue 8Kbytes delay 600 noerror
+
+    - ipfw add 02045 pipe 3 tcp from any to any dst-port 22 in
+    - ipfw add 02048 pipe 1 tcp from any 80 to any out
+    
+    # Scale back bandwidth hogs
+    
+    - ipfw add 2046 pipe 2 tcp from any 80 to 4.79.224.34 out
+    - ipfw add 2046 pipe 2 tcp from any 80 to 60.28.252.0/24 out
+    - ipfw add 2046 pipe 2 tcp from any 80 to 61.135.178.78 out
+    - ipfw add 2046 pipe 2 tcp from any 80 to 64.12.186.0/24 out
+    - ipfw add 2046 pipe 2 tcp from any 80 to 212.143.22.168 out
+    - ipfw add 2046 pipe 2 tcp from any 80 to 220.181.33.0/24 out
+    
+whitelist:
+    - ipfw add 2042 allow tcp from ${ip} to any dst-port 22 in
+
+blacklist:
+    - ipfw add 2044 deny ip from ${ip} to any in
+
+blacklist_threshold: 6.0
+rules:
+    - pattern: 'Accepted \S+ for \S+ from (\S+) port \S+ \S+'
+      action:  whitelist
+      
+    - pattern: 'Failed \S+ for(?: invalid user)? root from (\S+) port \S+ \S+'
+      action:  strike
+      score:   6.0
+      
+    - pattern: 'Failed \S+ for(?: invalid user)? \S+ from (\S+) port \S+ \S+'
+      action:  strike
+      score:   1.0
+      
+    - pattern: 'Invalid user \S+ from (\S+)'
+      action:  strike
+      score:   0.8
+      
+    - pattern: 'Authentication failure for(?: illegal user)? \S+ from (\S+)'
+      action:  strike
+      score:   0.6
+      
+    - pattern: 'Did not receive identification string from (\S+)'
+      action:  strike
+      score:   5.0
