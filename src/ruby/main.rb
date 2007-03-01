@@ -5,6 +5,8 @@ require 'file/tail'
 require 'socket'
 require 'yaml'
 
+# Parse args
+
 def usage(message)
     puts message
     puts
@@ -39,5 +41,7 @@ end
 
 usage "moat: must specify a config file" unless conf
 usage "moat: must specify a log file to watch" unless auth_log
+
+# Fire it up
 
 Moat::Moat.new(conf, auth_log, moat_log).run

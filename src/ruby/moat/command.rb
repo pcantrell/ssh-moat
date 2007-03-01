@@ -1,6 +1,13 @@
 module Moat
     private
     
+    # A command line with optional named parameters that can be invoked repeatedly.
+    # For example:
+    #
+    #    cmd = Command.new("mkdir ${dir}")
+    #    cmd.execute(logger, :dir => "/tmp/foo")
+    #    cmd.execute(logger, :dir => "/tmp/bar")
+    
     class Command
         def initialize(cmd_line)
             raise "cmd_line is nil" unless cmd_line

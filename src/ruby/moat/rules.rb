@@ -3,12 +3,17 @@ require 'moat/util'
 
 module Moat
 private
+
+    # A pattern-based rule.
+    
     class Rule
         def initialize(conf, &action)
             raise "Config error: no pattern specified for rule: #{conf}" unless conf['pattern']
             @pat = Regexp.new(conf['pattern'])
             @action = action
         end
+        
+        # Applies the rule action if the given log line matches the rule's pattern.
         
         def apply(log_line)
             if @pat =~ log_line
@@ -19,6 +24,8 @@ private
             end
         end
     end
+    
+    # A factory for whitelist rules.
     
     class Whitelister
         def initialize(conf)
@@ -43,6 +50,8 @@ private
             end
         end
     end
+    
+    # A factory for blacklist rules.
     
     class Blacklister
         def initialize(conf)
