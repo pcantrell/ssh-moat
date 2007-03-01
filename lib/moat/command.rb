@@ -5,8 +5,8 @@ module Moat
     # For example:
     #
     #    cmd = Command.new("mkdir ${dir}")
-    #    cmd.execute(logger, :dir => "/tmp/foo")
-    #    cmd.execute(logger, :dir => "/tmp/bar")
+    #    cmd.execute(:dir => "/tmp/foo")
+    #    cmd.execute(:dir => "/tmp/bar")
     
     class Command
         def initialize(cmd_line)
@@ -18,7 +18,7 @@ module Moat
             cmd_lines.map{ |cmd| Command.new(cmd) }
         end
         
-        def execute(logger, vars = {})
+        def execute(vars = {})
             # substitute variables
             cmd_line = @cmd_line.gsub(/\$\{([^}]+)\}/) do
                 vars[$1.intern] || raise("No such variable ${#{$1}}")
@@ -30,11 +30,11 @@ module Moat
 
             # check result
             if $? == 0
-                logger.log "#{cmd_line}"
+                LOGGER.info "#{cmd_line}"
             else
-                logger.log "command failed"
-                logger.log "    cmd: #{cmd_line}"
-                logger.log "    out: #{cmd_out}"
+                LOGGER.error "command failed"
+                LOGGER.error "    cmd: #{cmd_line}"
+                LOGGER.error "    out: #{cmd_out.strip}"
             end
         end
     end
