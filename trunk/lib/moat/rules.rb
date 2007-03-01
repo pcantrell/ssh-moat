@@ -37,14 +37,14 @@ private
             "whitelist"
         end
         
-        def new_rule(conf, logger)
+        def new_rule(conf)
             Rule.new(conf) do |line, host|
                 ip = ::Moat.resolve_ip(host)
                 if !@whitelisted.include?(ip)
                     @whitelisted[ip] = nil
-                    logger.log "Whitelisting #{ip}: #{line}"
+                    LOGGER.warn "Whitelisting #{ip}: #{line}"
                     @whitelist_actions.each do |cmd|
-                        cmd.execute(logger, :ip => ip)
+                        cmd.execute(:ip => ip)
                     end
                 end
             end
@@ -65,17 +65,17 @@ private
             "strike"
         end
         
-        def new_rule(conf, logger)
+        def new_rule(conf)
             score = conf['score']
             Rule.new(conf) do |line, host|
                 ip = ::Moat.resolve_ip(host)
                 total = @scoreboard[ip] += score
-                logger.log "Total for #{ip} is #{total}: #{line}"
+                LOGGER.info "Total for #{ip} is #{total}: #{line}"
                 if total >= @blacklist_threshold && !@blacklisted.include?(ip)
                     @blacklisted[ip] = nil
-                    logger.log "Blacklisting #{ip}"
+                    LOGGER.warn "Blacklisting #{ip}"
                     @blacklist_actions.each do |cmd|
-                        cmd.execute(logger, :ip => ip)
+                        cmd.execute(:ip => ip)
                     end
                 end
             end
