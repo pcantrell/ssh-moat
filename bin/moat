@@ -1,4 +1,6 @@
-#!/usr/local/bin/ruby -I lib
+#!/usr/local/bin/ruby
+
+$LOAD_PATH << File.dirname(__FILE__) + '/../lib/'
 
 require 'moat/moat'
 
