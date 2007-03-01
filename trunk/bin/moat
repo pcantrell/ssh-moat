@@ -19,40 +19,40 @@ moat_log = '/var/log/moat.log'
 log_level = Logger::INFO
 
 opts = OptionParser.new do |opts|
-    opts.on("-c", "--config FILE", "moat config file") do |opt|
-        conf = opt
-    end
-    
-    opts.on("-w", "--watch FILE", "log file to watch (default: /var/log/auth.log)") do |opt|
-        auth_log = opt
-    end
-    
-    opts.on("-l", "--log FILE", "moat log file, or - for stdout (default: /var/log/moat.log)") do |opt|
-        moat_log = opt
-        moat_log = STDOUT if moat_log == '-'
-    end
-    
-    opts.on("--log-level LEVEL", "log level: info, warn, or error (default: info)") do |opt|
-        log_level = Logger::Severity.const_get opt.upcase
-    end
-    
-    opts.on_tail("-h", "--help", "show this message") do
-      puts opts
-      exit
-    end
+  opts.on("-c", "--config FILE", "moat config file") do |opt|
+    conf = opt
+  end
+  
+  opts.on("-w", "--watch FILE", "log file to watch (default: /var/log/auth.log)") do |opt|
+    auth_log = opt
+  end
+  
+  opts.on("-l", "--log FILE", "moat log file, or - for stdout (default: /var/log/moat.log)") do |opt|
+    moat_log = opt
+    moat_log = STDOUT if moat_log == '-'
+  end
+  
+  opts.on("--log-level LEVEL", "log level: info, warn, or error (default: info)") do |opt|
+    log_level = Logger::Severity.const_get opt.upcase
+  end
+  
+  opts.on_tail("-h", "--help", "show this message") do
+    puts opts
+    exit
+  end
 end
 
 def usage(opts, message)
-    opts.warn message
-    puts opts
-    exit 1
+  opts.warn message
+  puts opts
+  exit 1
 end
 
 begin
-    opts.parse!(ARGV)
+  opts.parse!(ARGV)
 rescue OptionParser::InvalidOption => invalid_opt
-    usage opts, invalid_opt.to_s 
-    exit
+  usage opts, invalid_opt.to_s 
+  exit
 end
 
 usage opts, "must specify a config file" unless conf
@@ -61,12 +61,12 @@ usage opts, "must specify a log file to watch" unless auth_log
 # Configure logging
 
 class Logger
-    class Formatter
-        CustomFormat = "%s %s: %s\n"
-        def call(severity, time, progname, msg)
-          CustomFormat % [format_datetime(time), severity[0..0], msg2str(msg)]
-        end
+  class Formatter
+    CustomFormat = "%s %s: %s\n"
+    def call(severity, time, progname, msg)
+      CustomFormat % [format_datetime(time), severity[0..0], msg2str(msg)]
     end
+  end
 end
 
 LOGGER = Logger.new(moat_log)
