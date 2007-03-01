@@ -1,4 +1,5 @@
 module Moat
+    
     #! replace with some nice logging framework, maybe?
     class Logger
         def initialize(log_file)
