@@ -1,0 +1,53 @@
+#---------------------------------------------------------------------------------------------
+#
+# This example configures SSH traffic to run through a very slow pipe by default. This causes
+# most dictionary attackers to give up quickly. If an IP does make a successful login, that
+# IP is whitelisted so that subsequent SSH traffic runs at full speed.
+#
+# Note that in this example, whitelists take precedence over blacklists -- but this is only
+# because the whilelist rule is number 2042 and the blacklist rule is 2044. If the numbers
+# were reverse, the blacklists would take precedence.
+#
+# For more information on slowing traffic using Dummynet pipes, see the man page for ipfw.
+# 
+#---------------------------------------------------------------------------------------------
+
+
+startup:
+  - ipfw delete 2042
+  - ipfw delete 2044
+  - ipfw delete 2045
+
+  - ipfw pipe 1 config bw 8Kbit/s queue 8Kbytes delay 600 noerror
+  - ipfw add 02045 pipe 3 tcp from any to any dst-port 22 in
+  
+whitelist:
+  - ipfw add 2042 allow tcp from ${ip} to any dst-port 22 in
+
+blacklist:
+  - ipfw add 2044 deny ip from ${ip} to any in
+
+blacklist_threshold: 6.0
+rules:
+  - pattern: 'Accepted \S+ for \S+ from (\S+) port \S+ \S+'
+    action:  whitelist
+    
+  - pattern: 'Failed \S+ for(?: invalid user)? root from (\S+) port \S+ \S+'
+    action:  strike
+    score:   6.0
+    
+  - pattern: 'Failed \S+ for(?: invalid user)? \S+ from (\S+) port \S+ \S+'
+    action:  strike
+    score:   1.0
+    
+  - pattern: 'Invalid user \S+ from (\S+)'
+    action:  strike
+    score:   0.8
+    
+  - pattern: 'Authentication failure for(?: illegal user)? \S+ from (\S+)'
+    action:  strike
+    score:   0.6
+    
+  - pattern: 'Did not receive identification string from (\S+)'
+    action:  strike
+    score:   5.0
