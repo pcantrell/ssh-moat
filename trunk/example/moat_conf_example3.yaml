@@ -1,10 +1,25 @@
+#---------------------------------------------------------------------------------------------
+#
+# This example takes complete control over the firewall, rolling in rules unrelated to SSH.
+# The first startup up rule flushes all firewall rules, and the rest of the startup rules
+# recreate a complete firewall configuration.
+# 
+# This approach has the advantage of keeping all your firewall rules under one roof. As a
+# bonus, if you're using OS X and configure moat as a launchd item, there's no need to set
+# up a separate script to add your custom firewall rules on startup.
+# 
+#---------------------------------------------------------------------------------------------
+
+
 startup:
+  # Reset ipfw config
+  
   - ipfw -f flush
 
-  # Failsafe
+  # Failsafe rules
   
   - ipfw add 65535 set 31 allow ip from any to any
-  - ipfw add 02041 allow tcp from 209.98.98.8 to any dst-port 22 in
+  - ipfw add 02041 allow tcp from some.safe.host to any dst-port 22 in
 
   # Standard rules
 
@@ -27,41 +42,13 @@ startup:
   - ipfw add 30520 allow udp from any to any in frag
   - ipfw add 35000 deny udp from any to any in
   
-  # Disabled standard rules
-
-  - ipfw set disable 10
-  - ipfw set disable 20
-  - ipfw add 06000 set 10 allow tcp from any to any dst-port 3283 in
-  - ipfw add 06000 set 10 allow tcp from any to any dst-port 5900 in
-  - ipfw add 06000 set 10 allow tcp from any to any dst-port 3283 in
-  - ipfw add 06000 set 10 allow tcp from any to any dst-port 5900 in
-  - ipfw add 20340 set 20 allow udp from any to any dst-port 137 in
-  - ipfw add 20350 set 20 allow udp from any to any dst-port 427 in
-  - ipfw add 22000 set 10 allow udp from any to any dst-port 3283 in
-  - ipfw add 22010 set 10 allow udp from any to any dst-port 5900 in
-
-  # Monitoring
-
-  - ipfw add 22030 allow udp from 216.243.185.67 to any dst-port 161 in
-  - ipfw add 22030 allow udp from 216.243.185.67 to any dst-port 161 in
-
   # Pipes
 
   - ipfw pipe 1 config bw 3000Kbit/s queue 200Kbytes
-  - ipfw pipe 2 config bw 64Kbit/s queue 12Kbytes
   - ipfw pipe 3 config bw 8Kbit/s queue 8Kbytes delay 600 noerror
 
   - ipfw add 02045 pipe 3 tcp from any to any dst-port 22 in
   - ipfw add 02048 pipe 1 tcp from any 80 to any out
-  
-  # Scale back bandwidth hogs
-  
-  - ipfw add 2046 pipe 2 tcp from any 80 to 4.79.224.34 out
-  - ipfw add 2046 pipe 2 tcp from any 80 to 60.28.252.0/24 out
-  - ipfw add 2046 pipe 2 tcp from any 80 to 61.135.178.78 out
-  - ipfw add 2046 pipe 2 tcp from any 80 to 64.12.186.0/24 out
-  - ipfw add 2046 pipe 2 tcp from any 80 to 212.143.22.168 out
-  - ipfw add 2046 pipe 2 tcp from any 80 to 220.181.33.0/24 out
   
 whitelist:
   - ipfw add 2042 allow tcp from ${ip} to any dst-port 22 in

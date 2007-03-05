@@ -1,0 +1,38 @@
+#---------------------------------------------------------------------------------------------
+#
+# This simple example blocks the IPs of hosts with too many failed logins, or suspicious
+# login behaviors.
+#
+# Note that there is a startup rule which deletes any previous rules applied by moat. This
+# prevents stale rules from piling up if moat is restarted.
+# 
+#---------------------------------------------------------------------------------------------
+
+
+startup:
+  - ipfw delete 2044
+  
+blacklist:
+  - ipfw add 2044 deny ip from ${ip} to any in
+
+blacklist_threshold: 6.0
+rules:
+  - pattern: 'Failed \S+ for(?: invalid user)? root from (\S+) port \S+ \S+'
+    action:  strike
+    score:   6.0
+    
+  - pattern: 'Failed \S+ for(?: invalid user)? \S+ from (\S+) port \S+ \S+'
+    action:  strike
+    score:   1.0
+    
+  - pattern: 'Invalid user \S+ from (\S+)'
+    action:  strike
+    score:   0.8
+    
+  - pattern: 'Authentication failure for(?: illegal user)? \S+ from (\S+)'
+    action:  strike
+    score:   0.6
+    
+  - pattern: 'Did not receive identification string from (\S+)'
+    action:  strike
+    score:   5.0

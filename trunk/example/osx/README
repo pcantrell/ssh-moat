@@ -1,0 +1,25 @@
+
+On OS X 10.4 and later, the system uses a slick little utility called "launchd" to manage system
+processes. Launchd will automatically start processes at startup or on demand, monitor them, and
+restart them if they die.
+
+You can configure launchd to launch moat on startup, and keep it running. Just do:
+
+    sudo cp moat.plist /Library/LaunchDaemons/
+    sudo cp chmod 644 /Library/LaunchDaemons/moat.plist
+
+Moat will then launch on startup. To launch it immediately:
+
+    sudo launchctl load /Library/LaunchDaemons/moat.plist
+    
+To stop it (until the next reboot):
+
+    sudo launchctl load /Library/LaunchDaemons/moat.plist
+    
+To stop and restart it immediately (e.g. if you make configuration changes):
+
+    sudo launchctl stop moat
+
+To restart it weekly, in order to flush out old rules for hosts which are no longer attacking:
+
+    33 3 * * tue /bin/launchctl stop moat
