@@ -14,7 +14,7 @@ require 'yaml'
 # Parse opts
 
 conf = nil
-auth_log = '/var/log/auth.log'
+auth_log = '/var/log/secure.log' # NB: used to be auth.log in 10.4.8 and prior
 moat_log = '/var/log/moat.log'
 log_level = Logger::INFO
 
@@ -23,7 +23,7 @@ opts = OptionParser.new do |opts|
     conf = opt
   end
   
-  opts.on("-w", "--watch FILE", "log file to watch (default: /var/log/auth.log)") do |opt|
+  opts.on("-w", "--watch FILE", "log file to watch (default: /var/log/secure.log)") do |opt|
     auth_log = opt
   end
   
